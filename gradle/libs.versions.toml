@@ -1,0 +1,14 @@
+[versions]
+agp = "8.9.1"
+junit = "4.13.2"
+robolectric = "4.14.1"
+orgJson = "20240303"
+checkstyle = "10.18.2"
+
+[libraries]
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+org-json = { group = "org.json", name = "json", version.ref = "orgJson" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }

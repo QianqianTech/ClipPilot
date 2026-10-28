@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CommentModelGateway 管理</title>
+  <style nonce="%NONCE%">
+    :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f5f7fb; color: #182033; }
+    main { max-width: 760px; margin: 0 auto; padding: 30px 18px 48px; }
+    section { background: #fff; border: 1px solid #e4e9f2; border-radius: 16px; padding: 20px; margin-top: 14px; box-shadow: 0 5px 18px rgba(20, 35, 62, .04); }
+    h1 { margin: 0; font-size: 26px; } h2 { margin: 0 0 8px; font-size: 18px; }
+    p, .hint { color: #64708a; line-height: 1.55; font-size: 14px; }
+    label { display: block; margin-top: 14px; font-size: 14px; font-weight: 600; }
+    input, select { box-sizing: border-box; width: 100%; margin-top: 6px; border: 1px solid #cdd6e5; border-radius: 10px; padding: 11px 12px; font: inherit; }
+    button { margin-top: 18px; border: 0; border-radius: 10px; padding: 11px 15px; background: #245be6; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+    button.secondary { margin-left: 8px; background: #edf2ff; color: #245be6; }
+    #state { background: #edf2ff; color: #245be6; border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+    .profile { display: grid; grid-template-columns: minmax(0, 1fr) 110px 140px; gap: 10px; margin-top: 8px; }
+    @media (max-width: 560px) { .profile { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>CommentModelGateway 管理</h1>
+  <p>此页面只管理服务端模型档位。模型 API Key 必须通过服务器环境变量注入，不能在此页面或 Android APK 中填写。</p>
+  <section>
+    <h2>后台访问</h2>
+    <label>后台管理令牌
+      <input id="admin-token" type="password" autocomplete="off" placeholder="仅保留在当前页面内存">
+    </label>
+    <button id="load">读取状态</button><button id="save" class="secondary">保存档位</button><button id="defaults" class="secondary">填入默认值</button>
+  </section>
+  <section>
+    <h2>网关状态</h2>
+    <div id="state">尚未读取。</div>
+  </section>
+  <section>
+    <h2>模型档位</h2>
+    <label>默认档位
+      <select id="active-profile">
+        <option value="standard">标准</option>
+        <option value="high_relevance">高关联</option>
+        <option value="economy">低成本</option>
+      </select>
+    </label>
+    <div class="hint">每行依次为模型 ID、温度（0–1）、最大输出 Token（64–512）。不提供供应商地址或密钥字段。</div>
+    <label>标准</label><div class="profile" data-profile="standard"></div>
+    <label>高关联</label><div class="profile" data-profile="high_relevance"></div>
+    <label>低成本</label><div class="profile" data-profile="economy"></div>
+  </section>
+</main>
+<script nonce="%NONCE%">
+  const profileIds = ["standard", "high_relevance", "economy"];
+  const state = document.querySelector("#state");
+  // Defaults come from GET /admin/v1/status (default_profiles); src/profile-store.mjs is the single source.
+  let defaultProfiles = {};
+  const fieldSpecs = [
+    { field: "model", label: "模型 ID", attributes: {} },
+    { field: "temperature", label: "温度", attributes: { type: "number", min: "0", max: "1", step: "0.05" } },
+    { field: "max_output_tokens", label: "最大输出 Token", attributes: { type: "number", min: "64", max: "512", step: "1" } }
+  ];
+  function renderProfiles(profiles = {}) {
+    for (const id of profileIds) {
+      const values = profiles[id] || defaultProfiles[id] || {};
+      const root = document.querySelector(`[data-profile="${id}"]`);
+      root.replaceChildren(...fieldSpecs.map(({ field, label, attributes }) => {
+        const input = document.createElement("input");
+        for (const [name, value] of Object.entries(attributes)) input.setAttribute(name, value);
+        input.dataset.field = field;
+        input.setAttribute("aria-label", `${id} ${label}`);
+        input.value = values[field] === undefined ? "" : String(values[field]);
+        if (!input.value) input.placeholder = "读取状态后显示";
+        return input;
+      }));
+    }
+  }
+  function authorization() {
+    return { "authorization": `Bearer ${document.querySelector("#admin-token").value.trim()}` };
+  }
+  function documentFromForm() {
+    const profiles = {};
+    for (const id of profileIds) {
+      const root = document.querySelector(`[data-profile="${id}"]`);
+      profiles[id] = {
+        model: root.querySelector('[data-field="model"]').value.trim(),
+        temperature: Number(root.querySelector('[data-field="temperature"]').value),
+        max_output_tokens: Number(root.querySelector('[data-field="max_output_tokens"]').value)
+      };
+    }
+    return { active_profile: document.querySelector("#active-profile").value, profiles };
+  }
+  async function json(url, options = {}) {
+    const response = await fetch(url, { ...options, headers: { ...authorization(), ...(options.headers || {}) } });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body?.error?.message || "请求失败");
+    return body;
+  }
+  document.querySelector("#load").addEventListener("click", async () => {
+    try {
+      const [gatewayStatus, profiles] = await Promise.all([
+        json("/admin/v1/status"), json("/admin/v1/model-profiles")
+      ]);
+      state.textContent = gatewayStatus.provider_configured
+        ? `模型服务已配置；默认档位：${gatewayStatus.active_profile}；密钥只在服务器环境变量中。`
+        : "模型服务尚未配置。请先在服务器设置 MODEL_BASE_URL 与 MODEL_API_KEY。";
+      state.textContent += `安全词表版本：${gatewayStatus.safety_terms_version || "未知"}。`;
+      defaultProfiles = gatewayStatus.default_profiles || {};
+      document.querySelector("#active-profile").value = profiles.active_profile;
+      renderProfiles(profiles.profiles);
+    } catch (error) { state.textContent = error.message; }
+  });
+  document.querySelector("#defaults").addEventListener("click", () => {
+    if (!Object.keys(defaultProfiles).length) {
+      state.textContent = "请先读取状态以获取服务端默认档位。";
+      return;
+    }
+    renderProfiles(defaultProfiles);
+    state.textContent = "已填入服务端默认档位，尚未保存。";
+  });
+  document.querySelector("#save").addEventListener("click", async () => {
+    try {
+      const result = await json("/admin/v1/model-profiles", {
+        method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(documentFromForm())
+      });
+      state.textContent = `已保存默认档位：${result.active_profile}。模型密钥未被页面接收或保存。`;
+    } catch (error) { state.textContent = error.message; }
+  });
+  renderProfiles();
+</script>
+</body>
+</html>

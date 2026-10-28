@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "active_profile": "standard",
+  "profiles": {
+    "standard": {
+      "model": "gpt-4o-mini",
+      "temperature": 0.35,
+      "max_output_tokens": 220
+    },
+    "high_relevance": {
+      "model": "gpt-4o-mini",
+      "temperature": 0.2,
+      "max_output_tokens": 280
+    },
+    "economy": {
+      "model": "gpt-4o-mini",
+      "temperature": 0.45,
+      "max_output_tokens": 160
+    }
+  }
+}

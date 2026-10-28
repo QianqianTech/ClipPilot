@@ -1,0 +1,93 @@
+plugins {
+    alias(libs.plugins.android.application)
+    id 'checkstyle'
+}
+
+// Release signing is configured outside source control: either a keystore.properties file in the
+// project root (see keystore.properties.example) or RELEASE_* environment variables in CI.
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+def releaseStoreFile = keystoreProperties.getProperty('storeFile') ?: System.getenv('RELEASE_STORE_FILE')
+def hasReleaseSigning = releaseStoreFile != null && !releaseStoreFile.isEmpty()
+
+android {
+    namespace 'com.example.videobrowseassistant'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.example.videobrowseassistant'
+        minSdk 26
+        targetSdk 36
+        // CI passes -PappVersionCode=<run number>; local builds use the checked-in baseline.
+        versionCode((project.findProperty('appVersionCode') ?: '14') as Integer)
+        versionName '0.8.0'
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword keystoreProperties.getProperty('storePassword') ?: System.getenv('RELEASE_STORE_PASSWORD')
+                keyAlias keystoreProperties.getProperty('keyAlias') ?: System.getenv('RELEASE_KEY_ALIAS')
+                keyPassword keystoreProperties.getProperty('keyPassword') ?: System.getenv('RELEASE_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests {
+            // Robolectric reads merged resources and the manifest.
+            includeAndroidResources = true
+        }
+    }
+
+    lint {
+        abortOnError true
+        warningsAsErrors true
+    }
+}
+
+checkstyle {
+    toolVersion = libs.versions.checkstyle.get()
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+}
+
+tasks.register('checkstyle', Checkstyle) {
+    description = 'Runs Checkstyle on main and unit-test Java sources.'
+    group = 'verification'
+    source 'src/main/java', 'src/test/java'
+    include '**/*.java'
+    classpath = files()
+    ignoreFailures = false
+    maxWarnings = 0
+}
+
+dependencies {
+    testImplementation libs.junit
+    testImplementation libs.robolectric
+    // The android.jar used by local unit tests only contains stubs for org.json.
+    testImplementation libs.org.json
+}

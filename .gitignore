@@ -1,0 +1,29 @@
+# Build outputs and caches
+/build/
+/app/build/
+/.gradle/
+/build-logs/
+*.apk
+*.aab
+/APK_SHA256.txt
+
+# Local machine files
+local.properties
+.DS_Store
+.idea/
+*.iml
+/captures/
+
+# Signing material (see keystore.properties.example)
+keystore.properties
+*.jks
+*.keystore
+/release/
+
+# Backups created during refactors
+/_backup/
+
+# Server-side credentials and mutable model-profile state must not enter source control.
+gateway/.env
+gateway/config/model-profiles.json
+gateway/node_modules/

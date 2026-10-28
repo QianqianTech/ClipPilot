@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification small icon: single color, the system tints it. Arrow = swipe up. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,3 L5,10 L6.4,11.4 L11,6.8 L11,21 L13,21 L13,6.8 L17.6,11.4 L19,10Z" />
+</vector>

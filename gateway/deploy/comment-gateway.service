@@ -1,0 +1,51 @@
+# systemd example for CommentModelGateway.
+# Install code at /opt/comment-gateway, create the system user, then:
+#   install -d -m 700 -o comment-gateway -g comment-gateway /opt/comment-gateway/config
+#   install -d -m 700 /etc/comment-gateway   # then write /etc/comment-gateway/env (root:root, mode 600)
+#   systemctl daemon-reload && systemctl enable --now comment-gateway
+[Unit]
+Description=CommentModelGateway (manual comment assist model gateway)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=comment-gateway
+Group=comment-gateway
+WorkingDirectory=/opt/comment-gateway
+# MODEL_BASE_URL, MODEL_API_KEY, MODEL_GATEWAY_CLIENT_TOKEN, GATEWAY_ADMIN_TOKEN, ...
+EnvironmentFile=/etc/comment-gateway/env
+ExecStart=/usr/bin/node /opt/comment-gateway/src/server.mjs
+Restart=on-failure
+RestartSec=5
+# The gateway drains in-flight requests for up to 10s after SIGTERM.
+KillSignal=SIGTERM
+TimeoutStopSec=15
+UMask=0077
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/comment-gateway/config
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+# MemoryDenyWriteExecute is intentionally omitted: V8's JIT needs W+X pages.
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log*
+.env
+.env.*
+.git
+.gitignore
+test
+deploy
+Dockerfile
+.dockerignore
+eslint.config.mjs
+README.md
+# Mutable server state and atomic-write leftovers never go into the image.
+config/model-profiles.json
+config/*.tmp

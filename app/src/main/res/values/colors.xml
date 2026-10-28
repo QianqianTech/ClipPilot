@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_blue">#2457E6</color>
+    <color name="brand_blue_pressed">#1739A4</color>
+    <color name="brand_blue_light">#EAF0FF</color>
+    <color name="on_brand">#FFFFFF</color>
+    <color name="surface">#F7F8FC</color>
+    <color name="card">#FFFFFF</color>
+    <color name="border">#E5EAF2</color>
+    <color name="text_primary">#162033</color>
+    <color name="text_secondary">#6B758A</color>
+    <color name="text_body">#4C576E</color>
+    <color name="status_ok">#23AA66</color>
+    <color name="status_ok_text">#147D4B</color>
+    <color name="status_error">#D25D49</color>
+    <color name="status_error_text">#B44632</color>
+    <color name="status_idle">#C1C9D7</color>
+    <color name="primary_disabled">#AABBEF</color>
+    <color name="secondary_disabled_fill">#F1F3F7</color>
+    <color name="secondary_disabled_stroke">#D9DEE8</color>
+    <color name="secondary_stroke">#D6DEEF</color>
+    <color name="launcher_background">#2457E6</color>
+</resources>

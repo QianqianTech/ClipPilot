@@ -1,0 +1,20 @@
+{
+  "name": "comment-model-gateway",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Server-owned, OpenAI-compatible gateway for manual Android comment assistance.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0"
+  }
+}
