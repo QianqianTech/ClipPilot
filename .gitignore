@@ -4,8 +4,8 @@
 /.gradle/
 /build-logs/
 *.apk
+!/VideoBrowseAssistant.apk
 *.aab
-/APK_SHA256.txt
 
 # Local machine files
 local.properties
