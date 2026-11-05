@@ -2,7 +2,7 @@
 
 版本号、构建产物大小与 SHA-256 只在本文件维护；README 和任务清单引用这里，不再重复记录。
 
-## 0.8.0（2026-10-08，待本机构建确认）
+## 0.8.0（2026-10-08）
 
 依据 [改进任务清单](IMPROVEMENT_TASK_CHECKLIST.md) 完成的工程化版本，功能边界不变。
 
@@ -30,7 +30,7 @@
 
 | 产物 | 大小 | SHA-256 |
 |---|---|---|
-| `app-debug.apk`（0.8.0-debug） | 待 `scripts/verify.sh` 输出 | 待 `scripts/verify.sh` 输出 |
+| `VideoBrowseAssistant.apk`（0.8.0-debug） | 163,682 bytes | `da1815d71f4a40dd6ed85553190354f055e7ac6bd0ca345eb5cd1f165551edf1` |
 
 ## 0.7.0（2026-09-30）
 
